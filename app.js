@@ -200,27 +200,36 @@ function renderMeme() {
     const sh = customImage.height * scale;
     ctx.drawImage(customImage, (w - sw) / 2, (h - sh) / 2, sw, sh);
   } else if (currentTemplate) {
-    // 背景
+    // 纯色背景
     ctx.fillStyle = currentTemplate.bg;
     ctx.fillRect(0, 0, w, h);
 
-    // 随机装饰圆
-    ctx.fillStyle = 'rgba(255,255,255,0.05)';
-    const seed = currentTemplate.name.charCodeAt(0) * 12345;
-    for (let i = 0; i < 10; i++) {
-      const pseudoX = ((seed * (i + 1) * 73) % w + w) % w;
-      const pseudoY = ((seed * (i + 1) * 137) % h + h) % h;
-      const r = 30 + ((seed * (i + 7)) % 80);
-      ctx.beginPath();
-      ctx.arc(pseudoX, pseudoY, r, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    // 中心光晕（让 emoji 更突出）
+    const glowGrad = ctx.createRadialGradient(w/2, h/2, h*0.1, w/2, h/2, h*0.7);
+    glowGrad.addColorStop(0, 'rgba(255,255,255,0.12)');
+    glowGrad.addColorStop(0.5, 'rgba(255,255,255,0.03)');
+    glowGrad.addColorStop(1, 'rgba(0,0,0,0.1)');
+    ctx.fillStyle = glowGrad;
+    ctx.fillRect(0, 0, w, h);
 
-    // Emoji
-    ctx.font = '140px sans-serif';
+    // 四周暗角
+    const vignette = ctx.createRadialGradient(w/2, h/2, h*0.35, w/2, h/2, h*0.85);
+    vignette.addColorStop(0, 'transparent');
+    vignette.addColorStop(1, 'rgba(0,0,0,0.25)');
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, w, h);
+
+    // 大号 Emoji，加投影
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur = 40;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 8;
+    ctx.font = '220px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(currentTemplate.emoji, w / 2, h / 2);
+    ctx.fillText(currentTemplate.emoji, w / 2, h / 2 - 10);
+    ctx.restore();
   } else {
     ctx.fillStyle = '#1a1a2e';
     ctx.fillRect(0, 0, w, h);
