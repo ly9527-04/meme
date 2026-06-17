@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>表情包生成器 - 在线表情包制作</title>
+  <meta name="description" content="免费在线表情包生成器，经典模板一键生成，支持上传图片，下载无水印">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <header class="header">
+    <h1>😂 表情包生成器</h1>
+    <p class="subtitle">经典模板 · 一键生成 · 免费下载</p>
+  </header>
+
+  <div class="container">
+
+    <!-- 模板选择 -->
+    <div class="card">
+      <h2 class="card-title">🎭 选择模板</h2>
+      <div class="template-grid" id="templateGrid"></div>
+      <div class="upload-area" id="uploadArea">
+        <input type="file" accept="image/*" id="imageUpload" hidden>
+        <button class="btn btn-outline" onclick="document.getElementById('imageUpload').click()">
+          📷 上传自己的图片
+        </button>
+      </div>
+    </div>
+
+    <!-- 编辑器 -->
+    <div class="card" id="editorCard">
+      <h2 class="card-title">✏️ 编辑文字</h2>
+
+      <div class="canvas-wrapper">
+        <canvas id="memeCanvas" width="600" height="450"></canvas>
+      </div>
+
+      <div class="form-group">
+        <label>⬆️ 上方文字</label>
+        <input type="text" id="topText" placeholder="输入上方文字..." maxlength="50" oninput="renderMeme()">
+      </div>
+      <div class="form-group">
+        <label>⬇️ 下方文字</label>
+        <input type="text" id="bottomText" placeholder="输入下方文字..." maxlength="50" oninput="renderMeme()">
+      </div>
+
+      <div class="editor-actions">
+        <button class="btn btn-primary" onclick="downloadMeme()">📥 下载图片</button>
+        <button class="btn btn-outline" onclick="resetAll()">🔄 重置</button>
+      </div>
+    </div>
+
+    <!-- 广告位 -->
+    <div class="ad-placeholder">
+      <span>📢 广告位 · 联系合作</span>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <span>表情包生成器</span> · 在线制作 · 免费下载 · 转载请注明来源
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>
