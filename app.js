@@ -11,6 +11,7 @@ canvas.height = 525;
 
 let currentTemplate = null;
 let customImage = null;
+const templateImages = {}; // 预加载的模板图片缓存
 
 // 文字层: { id, text, x, y, size, color, stroke, rotation, bold, fontSize }
 let textLayers = [];
@@ -47,9 +48,20 @@ const templates = [
   { name: '小丑',      bg: '#2f1b3d', emoji: '🤡', cat: '暗黑' },
   { name: '幽灵',      bg: '#1a1a3a', emoji: '👻', cat: '暗黑' },
   { name: '恶魔',      bg: '#4a0a0a', emoji: '👿', cat: '暗黑' },
+  // 🔥 2026热门人物（图片模板）
+  { name: '背手负鼠',  bg: '#6b5b4f', emoji: '🐭', cat: '🔥热门', img: 'img/fushu.svg' },
+  { name: '哈兰德',    bg: '#3a7cc3', emoji: '⚽', cat: '🔥热门', img: 'img/haland.svg' },
+  { name: '嘎子',      bg: '#c0392b', emoji: '🥤', cat: '🔥热门', img: 'img/gazi.svg' },
+  { name: '黄银勋',    bg: '#2c3e50', emoji: '💼', cat: '🔥热门', img: 'img/huangyx.svg' },
+  { name: '小马云',    bg: '#8b6914', emoji: '✒️', cat: '🔥热门', img: 'img/xiaomayun.svg' },
+  { name: '鹿哈',      bg: '#8e44ad', emoji: '🎤', cat: '🔥热门', img: 'img/luha.svg' },
+  { name: '汤姆猫',    bg: '#5d8aa8', emoji: '🐱', cat: '🔥热门', img: 'img/tomcat.svg' },
+  { name: '负鼠淡定',  bg: '#8f9779', emoji: '🐭', cat: '🔥热门', img: 'img/fushu2.svg' },
+  { name: '嘎子玉米',  bg: '#d35400', emoji: '🌽', cat: '🔥热门', img: 'img/gazi2.svg' },
+  { name: '魔人布欧',  bg: '#e91e90', emoji: '👹', cat: '🔥热门', img: 'img/haland2.svg' },
 ];
 
-const categories = ['全部', '经典', '动物', '手势', '搞笑', '暗黑'];
+const categories = ['全部', '🔥热门', '经典', '动物', '手势', '搞笑', '暗黑'];
 let activeCategory = '全部';
 
 // ── 初始化模板侧边栏 ─────────────────────────────────
@@ -200,36 +212,49 @@ function renderMeme() {
     const sh = customImage.height * scale;
     ctx.drawImage(customImage, (w - sw) / 2, (h - sh) / 2, sw, sh);
   } else if (currentTemplate) {
-    // 纯色背景
-    ctx.fillStyle = currentTemplate.bg;
-    ctx.fillRect(0, 0, w, h);
+    // 🔥 如果有图片模板，用图片作底
+    if (currentTemplate.img && templateImages[currentTemplate.img]) {
+      const tplImg = templateImages[currentTemplate.img];
+      const scale = Math.max(w / tplImg.width, h / tplImg.height);
+      const sw = tplImg.width * scale;
+      const sh = tplImg.height * scale;
+      ctx.drawImage(tplImg, (w - sw) / 2, (h - sh) / 2, sw, sh);
 
-    // 中心光晕（让 emoji 更突出）
-    const glowGrad = ctx.createRadialGradient(w/2, h/2, h*0.1, w/2, h/2, h*0.7);
-    glowGrad.addColorStop(0, 'rgba(255,255,255,0.12)');
-    glowGrad.addColorStop(0.5, 'rgba(255,255,255,0.03)');
-    glowGrad.addColorStop(1, 'rgba(0,0,0,0.1)');
-    ctx.fillStyle = glowGrad;
-    ctx.fillRect(0, 0, w, h);
+      // 暗角让文字更显眼
+      const vignette = ctx.createRadialGradient(w/2, h/2, h*0.3, w/2, h/2, h*0.85);
+      vignette.addColorStop(0, 'transparent');
+      vignette.addColorStop(1, 'rgba(0,0,0,0.3)');
+      ctx.fillStyle = vignette;
+      ctx.fillRect(0, 0, w, h);
+    } else {
+      // 纯色背景 + emoji
+      ctx.fillStyle = currentTemplate.bg;
+      ctx.fillRect(0, 0, w, h);
 
-    // 四周暗角
-    const vignette = ctx.createRadialGradient(w/2, h/2, h*0.35, w/2, h/2, h*0.85);
-    vignette.addColorStop(0, 'transparent');
-    vignette.addColorStop(1, 'rgba(0,0,0,0.25)');
-    ctx.fillStyle = vignette;
-    ctx.fillRect(0, 0, w, h);
+      const glowGrad = ctx.createRadialGradient(w/2, h/2, h*0.1, w/2, h/2, h*0.7);
+      glowGrad.addColorStop(0, 'rgba(255,255,255,0.12)');
+      glowGrad.addColorStop(0.5, 'rgba(255,255,255,0.03)');
+      glowGrad.addColorStop(1, 'rgba(0,0,0,0.1)');
+      ctx.fillStyle = glowGrad;
+      ctx.fillRect(0, 0, w, h);
 
-    // 大号 Emoji，加投影
-    ctx.save();
-    ctx.shadowColor = 'rgba(0,0,0,0.5)';
-    ctx.shadowBlur = 40;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 8;
-    ctx.font = '220px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(currentTemplate.emoji, w / 2, h / 2 - 10);
-    ctx.restore();
+      const vignette = ctx.createRadialGradient(w/2, h/2, h*0.35, w/2, h/2, h*0.85);
+      vignette.addColorStop(0, 'transparent');
+      vignette.addColorStop(1, 'rgba(0,0,0,0.25)');
+      ctx.fillStyle = vignette;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur = 40;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 8;
+      ctx.font = '220px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(currentTemplate.emoji, w / 2, h / 2 - 10);
+      ctx.restore();
+    }
   } else {
     ctx.fillStyle = '#1a1a2e';
     ctx.fillRect(0, 0, w, h);
@@ -446,7 +471,20 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
+// ── 预加载模板图片 ────────────────────────────────────
+function preloadTemplateImages() {
+  templates.forEach(tpl => {
+    if (tpl.img && !templateImages[tpl.img]) {
+      const img = new Image();
+      img.onload = () => { templateImages[tpl.img] = img; renderMeme(); };
+      img.onerror = () => console.warn('模板图片加载失败:', tpl.img);
+      img.src = tpl.img;
+    }
+  });
+}
+
 // ── 启动 ────────────────────────────────────────────────
+preloadTemplateImages();
 buildCategoryTabs();
 filterTemplates();
 selectTemplate(0);
