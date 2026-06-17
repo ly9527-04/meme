@@ -3,63 +3,100 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>表情包生成器 - 在线表情包制作</title>
-  <meta name="description" content="免费在线表情包生成器，经典模板一键生成，支持上传图片，下载无水印">
+  <title>表情包工坊 · 在线生成器</title>
+  <meta name="description" content="免费在线表情包制作工具，海量模板，自由编辑文字位置大小颜色，一键下载">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
-  <header class="header">
-    <h1>😂 表情包生成器</h1>
-    <p class="subtitle">经典模板 · 一键生成 · 免费下载</p>
-  </header>
+  <div class="app">
 
-  <div class="container">
-
-    <!-- 模板选择 -->
-    <div class="card">
-      <h2 class="card-title">🎭 选择模板</h2>
+    <!-- 侧边栏 - 模板库 -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2>🎭 模板库</h2>
+        <button class="btn-close" onclick="toggleSidebar()">✕</button>
+      </div>
+      <div class="search-box">
+        <input type="text" id="searchTpl" placeholder="搜索模板..." oninput="filterTemplates()">
+      </div>
+      <div class="category-tabs" id="categoryTabs"></div>
       <div class="template-grid" id="templateGrid"></div>
-      <div class="upload-area" id="uploadArea">
-        <input type="file" accept="image/*" id="imageUpload" hidden>
-        <button class="btn btn-outline" onclick="document.getElementById('imageUpload').click()">
-          📷 上传自己的图片
-        </button>
-      </div>
-    </div>
+    </aside>
 
-    <!-- 编辑器 -->
-    <div class="card" id="editorCard">
-      <h2 class="card-title">✏️ 编辑文字</h2>
+    <!-- 主区域 -->
+    <main class="main">
 
-      <div class="canvas-wrapper">
-        <canvas id="memeCanvas" width="600" height="450"></canvas>
+      <!-- 顶部栏 -->
+      <header class="topbar">
+        <button class="btn-icon" onclick="toggleSidebar()" title="模板库">📂</button>
+        <h1>表情包工坊</h1>
+        <div class="topbar-actions">
+          <button class="btn btn-sm btn-primary" onclick="downloadMeme()">📥 下载</button>
+          <button class="btn btn-sm btn-outline" onclick="resetAll()">🔄</button>
+        </div>
+      </header>
+
+      <!-- 画布区 -->
+      <div class="canvas-area" id="canvasArea">
+        <div class="canvas-container" id="canvasContainer">
+          <canvas id="memeCanvas"></canvas>
+          <!-- 文字层拖拽手柄 -->
+          <div class="text-handles" id="textHandles"></div>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label>⬆️ 上方文字</label>
-        <input type="text" id="topText" placeholder="输入上方文字..." maxlength="50" oninput="renderMeme()">
-      </div>
-      <div class="form-group">
-        <label>⬇️ 下方文字</label>
-        <input type="text" id="bottomText" placeholder="输入下方文字..." maxlength="50" oninput="renderMeme()">
-      </div>
+      <!-- 编辑面板 -->
+      <div class="editor-panel" id="editorPanel">
+        <div class="panel-section">
+          <div class="section-header">
+            <span>📝 文字层</span>
+            <button class="btn btn-sm btn-outline" onclick="addTextLayer()">+ 添加文字</button>
+          </div>
+          <div class="layers-list" id="layersList"></div>
+        </div>
 
-      <div class="editor-actions">
-        <button class="btn btn-primary" onclick="downloadMeme()">📥 下载图片</button>
-        <button class="btn btn-outline" onclick="resetAll()">🔄 重置</button>
-      </div>
-    </div>
+        <!-- 当前选中文字层的属性 -->
+        <div class="panel-section" id="layerProps" style="display:none;">
+          <div class="section-header"><span>🎨 文字样式</span></div>
+          <div class="prop-row">
+            <label>内容</label>
+            <input type="text" id="propText" oninput="updateSelectedLayer()">
+          </div>
+          <div class="prop-row">
+            <label>字号</label>
+            <input type="range" id="propSize" min="16" max="120" value="48" oninput="updateSelectedLayer()">
+            <span class="prop-val" id="sizeVal">48px</span>
+          </div>
+          <div class="prop-row">
+            <label>颜色</label>
+            <input type="color" id="propColor" value="#ffffff" oninput="updateSelectedLayer()">
+          </div>
+          <div class="prop-row">
+            <label>描边</label>
+            <input type="color" id="propStroke" value="#000000" oninput="updateSelectedLayer()">
+          </div>
+          <div class="prop-row">
+            <label>旋转</label>
+            <input type="range" id="propRotation" min="-45" max="45" value="0" oninput="updateSelectedLayer()">
+            <span class="prop-val" id="rotVal">0°</span>
+          </div>
+          <div class="prop-row">
+            <label>粗体</label>
+            <input type="checkbox" id="propBold" onchange="updateSelectedLayer()">
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="deleteSelectedLayer()" style="margin-top:8px;">🗑 删除此层</button>
+        </div>
 
-    <!-- 广告位 -->
-    <div class="ad-placeholder">
-      <span>📢 广告位 · 联系合作</span>
-    </div>
+        <!-- 图片源 -->
+        <div class="panel-section">
+          <div class="section-header"><span>🖼️ 底图</span></div>
+          <input type="file" accept="image/*" id="imageUpload" hidden>
+          <button class="btn btn-outline btn-sm" onclick="document.getElementById('imageUpload').click()">📷 上传自定义图片</button>
+        </div>
+      </div>
+    </main>
   </div>
-
-  <footer class="footer">
-    <span>表情包生成器</span> · 在线制作 · 免费下载 · 转载请注明来源
-  </footer>
 
   <script src="/app.js"></script>
 </body>
